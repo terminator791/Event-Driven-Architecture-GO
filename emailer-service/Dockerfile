@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Build the emailer-service binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o emailer-service ./emailer-service/cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./emailer-service/cmd/main.go
 
 # Final stage
 FROM alpine:latest
@@ -22,7 +22,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copy the binary from builder stage
-COPY --from=builder /app/emailer-service .
+COPY --from=builder /app/app .
 
 # Run the binary
-CMD ["./emailer-service"]
+CMD ["./app"]

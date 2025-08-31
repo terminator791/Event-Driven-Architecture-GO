@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Build the user-api binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o user-api ./user-api/cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./user-api/cmd/main.go
 
 # Final stage
 FROM alpine:latest
@@ -22,10 +22,10 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copy the binary from builder stage
-COPY --from=builder /app/user-api .
+COPY --from=builder /app/app .
 
 # Expose port
 EXPOSE 8080
 
 # Run the binary
-CMD ["./user-api"]
+CMD ["./app"]
