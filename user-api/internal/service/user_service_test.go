@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -309,11 +310,7 @@ func TestUserService_EventPublishing_HandlesError(t *testing.T) {
 
 func TestUserService_EventData_Validation(t *testing.T) {
 	// Test that we can create and serialize events properly
-	event := events.UserCreated{
-		ID:        "test-id",
-		Email:     "test@example.com",
-		EventID:   "event-id",
-	}
+	event := events.NewUserCreated("test-id", "test@example.com", time.Now())
 
 	// Act
 	data, err := event.ToJSON()
@@ -326,7 +323,8 @@ func TestUserService_EventData_Validation(t *testing.T) {
 	var deserializedEvent events.UserCreated
 	err = deserializedEvent.FromJSON(data)
 	assert.NoError(t, err)
-	assert.Equal(t, event.ID, deserializedEvent.ID)
+	assert.Equal(t, event.UserID, deserializedEvent.UserID)
 	assert.Equal(t, event.Email, deserializedEvent.Email)
-	assert.Equal(t, event.EventID, deserializedEvent.EventID)
+	assert.Equal(t, event.GetEventType(), "user.created")
+	assert.NotEmpty(t, event.GetMetadata().EventID)
 }
