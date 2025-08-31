@@ -133,6 +133,7 @@ type Payment struct {
 	Status          PaymentStatus `json:"status" db:"status"`
 	TransactionID   string        `json:"transaction_id,omitempty" db:"transaction_id"`
 	FailureReason   string        `json:"failure_reason,omitempty" db:"failure_reason"`
+	RetryCount      int           `json:"retry_count" db:"retry_count"`
 	ProcessedAt     *time.Time    `json:"processed_at,omitempty" db:"processed_at"`
 	CreatedAt       time.Time     `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time     `json:"updated_at" db:"updated_at"`
