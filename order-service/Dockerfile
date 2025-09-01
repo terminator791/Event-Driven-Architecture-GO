@@ -10,8 +10,7 @@ RUN go mod download
 COPY . .
 
 # Build the order service
-RUN CGO_ENABLED=0 GOOS=linux go build -o order-service ./order-service/cmd/main.go
-
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./order-service/cmd/main.go
 # Final stage
 FROM alpine:latest
 
@@ -19,12 +18,12 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /root/
 
 # Copy the binary
-COPY --from=builder /app/order-service .
+COPY --from=builder /app/app .
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=60s --timeout=30s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8081/api/v1/health || exit 1
 
 EXPOSE 8081
 
-CMD ["./order-service"]
+CMD ["./app"]

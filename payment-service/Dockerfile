@@ -10,8 +10,7 @@ RUN go mod download
 COPY . .
 
 # Build the payment service
-RUN CGO_ENABLED=0 GOOS=linux go build -o payment-service ./payment-service/cmd/main.go
-
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./payment-service/cmd/main.go
 # Final stage
 FROM alpine:latest
 
@@ -19,12 +18,12 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /root/
 
 # Copy the binary
-COPY --from=builder /app/payment-service .
+COPY --from=builder /app/app .
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=60s --timeout=30s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8082/api/v1/health || exit 1
 
 EXPOSE 8082
 
-CMD ["./payment-service"]
+CMD ["./app"]

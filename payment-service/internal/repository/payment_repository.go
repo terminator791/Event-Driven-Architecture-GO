@@ -96,16 +96,24 @@ func (r *paymentRepository) GetByOrderID(ctx context.Context, orderID string) (*
 
 // UpdateStatus updates a payment's status
 func (r *paymentRepository) UpdateStatus(ctx context.Context, id string, status models.PaymentStatus, transactionID, failureReason string) error {
+	// First update the basic fields
 	query := `
 		UPDATE payments 
-		SET status = $1, transaction_id = $2, failure_reason = $3, 
-		    processed_at = CASE WHEN $1 = 'completed' THEN NOW() ELSE processed_at END,
-		    updated_at = NOW() 
+		SET status = $1, transaction_id = $2, failure_reason = $3, updated_at = NOW() 
 		WHERE id = $4`
 
 	_, err := r.db.ExecContext(ctx, query, status, transactionID, failureReason, id)
 	if err != nil {
 		return fmt.Errorf("failed to update payment status: %w", err)
+	}
+
+	// If status is completed, also update processed_at
+	if status == models.PaymentStatusCompleted {
+		processedQuery := `UPDATE payments SET processed_at = NOW() WHERE id = $1`
+		_, err := r.db.ExecContext(ctx, processedQuery, id)
+		if err != nil {
+			return fmt.Errorf("failed to update processed_at: %w", err)
+		}
 	}
 
 	return nil
