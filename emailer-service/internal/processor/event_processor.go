@@ -92,10 +92,10 @@ func (p *EventProcessor) processUserCreatedEvent(data []byte) error {
 		return fmt.Errorf("failed to deserialize event: %w", err)
 	}
 
-	log.Printf("👤 Processing UserCreated event for user: %s (Event ID: %s)", event.Email, event.EventID)
+	log.Printf("👤 Processing UserCreated event for user: %s (Event ID: %s)", event.Email, event.Metadata.EventID)
 
 	// Send welcome email
-	if err := p.emailService.SendWelcomeEmail(event.ID, event.Email); err != nil {
+	if err := p.emailService.SendWelcomeEmail(event.UserID, event.Email); err != nil {
 		return fmt.Errorf("failed to send welcome email: %w", err)
 	}
 

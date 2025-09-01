@@ -113,12 +113,17 @@ func (s *userService) hashPassword(password string) (string, error) {
 
 // publishUserCreatedEvent publishes a user created event to Kafka
 func (s *userService) publishUserCreatedEvent(ctx context.Context, user *models.User) error {
-	event := events.UserCreated{
-		ID:        user.ID,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		EventID:   uuid.New().String(),
+	event := events.NewUserCreated(user.ID, user.Email, user.CreatedAt)
+	
+	// Set correlation ID from context if available
+	if correlationID := ctx.Value("correlation_id"); correlationID != nil {
+		if strCorrelationID, ok := correlationID.(string); ok {
+			event.Metadata.WithCorrelationID(strCorrelationID)
+		}
 	}
+	
+	// Set user ID in metadata
+	event.Metadata.WithUserID(user.ID)
 
 	eventData, err := event.ToJSON()
 	if err != nil {
